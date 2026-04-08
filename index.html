@@ -1,0 +1,188 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#f0e7d8">
+  <title>Expense Lantern</title>
+  <link rel="stylesheet" href="./style.css">
+</head>
+<body>
+  <main class="app">
+    <section class="shell" aria-labelledby="pageTitle">
+      <header class="hero">
+        <div class="hero-copy">
+          <p class="eyebrow">Expense Lantern</p>
+          <h1 id="pageTitle">한 달 지출을 환하게 보는 개인 가계부</h1>
+          <p class="hero-text">
+            수입과 지출을 빠르게 기록하고, 이번 달 흐름과 카테고리별 소비를 한눈에 확인해보세요.
+          </p>
+        </div>
+
+        <aside class="hero-panel">
+          <div class="month-nav" aria-label="월 이동">
+            <button type="button" class="month-button" id="prevMonthButton">이전 달</button>
+            <div class="month-center">
+              <p class="month-label" id="monthLabel"></p>
+              <p class="month-caption" id="monthCaption">이번 달 현황</p>
+            </div>
+            <button type="button" class="month-button" id="nextMonthButton">다음 달</button>
+          </div>
+
+          <div class="hero-insight">
+            <p class="insight-kicker">Monthly Signal</p>
+            <h2 class="insight-title" id="insightTitle">첫 기록을 남겨보세요</h2>
+            <p class="insight-text" id="insightText">
+              거래를 하나만 추가해도 이번 달 흐름이 바로 보이기 시작합니다.
+            </p>
+          </div>
+
+          <form class="budget-form" id="budgetForm">
+            <label class="budget-field" for="budgetInput">
+              <span class="budget-label">이번 달 예산</span>
+              <input id="budgetInput" name="budget" type="number" min="0" step="1000" placeholder="예: 1200000">
+            </label>
+            <button type="submit" class="primary-button">예산 저장</button>
+          </form>
+        </aside>
+      </header>
+
+      <section class="summary-grid" aria-label="월 요약">
+        <article class="summary-card">
+          <span class="summary-label">월 잔액</span>
+          <strong class="summary-value" id="balanceValue">₩0</strong>
+          <p class="summary-note" id="balanceNote">수입과 지출을 기록하면 순흐름이 보여요.</p>
+        </article>
+        <article class="summary-card">
+          <span class="summary-label">총수입</span>
+          <strong class="summary-value" id="incomeValue">₩0</strong>
+          <p class="summary-note">월급, 용돈, 부수입을 포함해요.</p>
+        </article>
+        <article class="summary-card">
+          <span class="summary-label">총지출</span>
+          <strong class="summary-value" id="expenseValue">₩0</strong>
+          <p class="summary-note">소비 흐름은 카테고리 카드에서 더 자세히 볼 수 있어요.</p>
+        </article>
+        <article class="summary-card">
+          <span class="summary-label">예산 잔여</span>
+          <strong class="summary-value" id="budgetValue">미설정</strong>
+          <p class="summary-note" id="budgetNote">예산을 저장하면 남은 금액과 사용률을 계산해드려요.</p>
+        </article>
+      </section>
+
+      <section class="composer-card" aria-labelledby="composerTitle">
+        <div class="section-head">
+          <div>
+            <p class="section-kicker">New Entry</p>
+            <h2 id="composerTitle">거래 추가</h2>
+          </div>
+          <button type="button" class="ghost-button" id="seedButton">예시 데이터 채우기</button>
+        </div>
+
+        <form class="entry-form" id="entryForm">
+          <label class="field field-type">
+            <span class="field-label">구분</span>
+            <select id="entryType" name="type">
+              <option value="expense">지출</option>
+              <option value="income">수입</option>
+            </select>
+          </label>
+
+          <label class="field field-amount">
+            <span class="field-label">금액</span>
+            <input id="entryAmount" name="amount" type="number" min="0" step="100" placeholder="예: 12500" required>
+          </label>
+
+          <label class="field field-category">
+            <span class="field-label">카테고리</span>
+            <select id="entryCategory" name="category"></select>
+          </label>
+
+          <label class="field field-date">
+            <span class="field-label">날짜</span>
+            <input id="entryDate" name="date" type="date" required>
+          </label>
+
+          <label class="field field-note">
+            <span class="field-label">메모</span>
+            <input id="entryNote" name="note" type="text" maxlength="80" placeholder="예: 점심 약속, OTT 결제">
+          </label>
+
+          <button type="submit" class="primary-button">기록 추가</button>
+        </form>
+
+        <div class="preset-row" aria-label="빠른 카테고리 선택">
+          <button type="button" class="preset-chip" data-type="expense" data-category="식비" data-note="식사 비용">식비</button>
+          <button type="button" class="preset-chip" data-type="expense" data-category="교통" data-note="이동 비용">교통</button>
+          <button type="button" class="preset-chip" data-type="expense" data-category="쇼핑" data-note="생활/개인 쇼핑">쇼핑</button>
+          <button type="button" class="preset-chip" data-type="expense" data-category="고정비" data-note="구독, 통신, 월세">고정비</button>
+          <button type="button" class="preset-chip" data-type="income" data-category="월급" data-note="정기 수입">월급</button>
+          <button type="button" class="preset-chip" data-type="income" data-category="부수입" data-note="추가 수입">부수입</button>
+        </div>
+      </section>
+
+      <section class="insight-grid" aria-label="분석 정보">
+        <article class="analysis-card" aria-labelledby="categoryTitle">
+          <div class="section-head">
+            <div>
+              <p class="section-kicker">Category Split</p>
+              <h2 id="categoryTitle">카테고리별 지출</h2>
+            </div>
+          </div>
+          <p class="empty-mini-state" id="categoryEmptyState">
+            아직 이번 달 지출이 없어요. 거래를 추가하면 어디에 가장 많이 쓰는지 바로 보여드릴게요.
+          </p>
+          <ul class="category-list" id="categoryList"></ul>
+        </article>
+
+        <article class="analysis-card" aria-labelledby="weeklyTitle">
+          <div class="section-head">
+            <div>
+              <p class="section-kicker">Weekly Flow</p>
+              <h2 id="weeklyTitle">주차별 소비 리듬</h2>
+            </div>
+          </div>
+          <p class="empty-mini-state" id="weeklyEmptyState">
+            이번 달 지출이 아직 없어서 주차별 그래프를 준비 중이에요.
+          </p>
+          <ul class="weekly-bars" id="weeklyBars"></ul>
+        </article>
+      </section>
+
+      <section class="transactions-card" aria-labelledby="transactionsTitle">
+        <div class="section-head">
+          <div>
+            <p class="section-kicker">Ledger</p>
+            <h2 id="transactionsTitle">거래 목록</h2>
+          </div>
+        </div>
+
+        <div class="filters">
+          <label class="filter-field">
+            <span class="field-label">검색</span>
+            <input id="searchInput" type="search" placeholder="메모나 카테고리 검색">
+          </label>
+
+          <label class="filter-field">
+            <span class="field-label">표시</span>
+            <select id="typeFilter">
+              <option value="all">전체</option>
+              <option value="expense">지출만</option>
+              <option value="income">수입만</option>
+            </select>
+          </label>
+
+          <button type="button" class="ghost-button" id="resetMonthButton">이번 달로 돌아가기</button>
+        </div>
+
+        <p class="empty-state" id="transactionsEmptyState">
+          이번 달 거래가 아직 없어요. 첫 수입이나 첫 지출부터 기록해보세요.
+        </p>
+        <ul class="transaction-list" id="transactionList"></ul>
+      </section>
+    </section>
+  </main>
+
+  <script src="./script.js" defer></script>
+</body>
+</html>
