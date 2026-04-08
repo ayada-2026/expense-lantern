@@ -27,7 +27,6 @@ const prevMonthButton = document.getElementById("prevMonthButton");
 const nextMonthButton = document.getElementById("nextMonthButton");
 const resetMonthButton = document.getElementById("resetMonthButton");
 const seedButton = document.getElementById("seedButton");
-const entryCollapse = document.getElementById("entryCollapse");
 const entryForm = document.getElementById("entryForm");
 const entryType = document.getElementById("entryType");
 const entryAmount = document.getElementById("entryAmount");
@@ -46,8 +45,6 @@ const transactionsEmptyState = document.getElementById("transactionsEmptyState")
 const analysisTabButtons = Array.from(document.querySelectorAll("[data-analysis-tab]"));
 const analysisPanels = Array.from(document.querySelectorAll("[data-analysis-panel]"));
 
-const mobileMedia = window.matchMedia("(max-width: 760px)");
-
 let state = loadState();
 let activeAnalysisTab = "category";
 
@@ -60,9 +57,7 @@ function loadState() {
       currentMonth: typeof parsed.currentMonth === "string" ? parsed.currentMonth : getMonthKey(new Date()),
       budgets: parsed.budgets && typeof parsed.budgets === "object" ? parsed.budgets : {},
       transactions: Array.isArray(parsed.transactions)
-        ? parsed.transactions
-            .map((transaction) => normalizeTransaction(transaction))
-            .filter(Boolean)
+        ? parsed.transactions.map(normalizeTransaction).filter(Boolean)
         : []
     };
   } catch (error) {
@@ -89,7 +84,6 @@ function normalizeTransaction(transaction) {
   const category = typeof transaction.category === "string" && transaction.category.trim()
     ? transaction.category.trim()
     : categoryPool[0];
-
   const date = typeof transaction.date === "string" && /^\d{4}-\d{2}-\d{2}$/.test(transaction.date)
     ? transaction.date
     : getDateKey(new Date());
@@ -159,9 +153,7 @@ function formatDateLabel(dateKey) {
 function getTransactionsForCurrentMonth() {
   return state.transactions
     .filter((transaction) => transaction.date.startsWith(state.currentMonth))
-    .sort((left, right) => (
-      right.date.localeCompare(left.date) || right.id - left.id
-    ));
+    .sort((left, right) => right.date.localeCompare(left.date) || right.id - left.id);
 }
 
 function getMonthlySummary(transactions) {
@@ -213,19 +205,19 @@ function getInsight(summary) {
   if (summary.expense > summary.income && summary.income > 0) {
     return {
       title: "지출 속도가 더 빨라요",
-      body: `수입보다 ${formatCurrency(summary.expense - summary.income)} 더 쓰고 있어요. 이번 달 남은 소비를 작은 단위로 나눠보는 게 도움이 됩니다.`
+      body: `수입보다 ${formatCurrency(summary.expense - summary.income)} 더 쓰고 있어요. 남은 소비를 조금 더 작은 단위로 나눠보면 좋아요.`
     };
   }
 
   return {
     title: "흐름이 잡히고 있어요",
-    body: "수입과 지출이 함께 기록되고 있어요. 카테고리와 주차별 리듬을 같이 보면 더 좋은 판단이 됩니다."
+    body: "수입과 지출이 함께 기록되고 있어요. 카테고리와 주간 흐름을 같이 보면 더 좋은 판단이 됩니다."
   };
 }
 
 function renderMonthHeader(transactions, summary) {
   monthLabel.textContent = formatMonthLabel(state.currentMonth);
-  monthCaption.textContent = transactions.length ? `${transactions.length}건의 거래가 기록됨` : "아직 기록 없음";
+  monthCaption.textContent = transactions.length ? `${transactions.length}건 기록됨` : "아직 기록 없음";
   budgetInput.value = summary.budget > 0 ? String(summary.budget) : "";
 
   const insight = getInsight(summary);
@@ -251,6 +243,8 @@ function renderSummary(summary) {
 
   if (summary.budget > 0) {
     budgetValue.textContent = formatCurrency(summary.remainingBudget);
+    budgetValue.classList.remove("is-placeholder");
+
     if (summary.remainingBudget >= 0) {
       budgetNote.textContent = `예산의 ${summary.budgetUsage}%를 사용했어요.`;
     } else {
@@ -258,6 +252,7 @@ function renderSummary(summary) {
     }
   } else {
     budgetValue.textContent = "미설정";
+    budgetValue.classList.add("is-placeholder");
     budgetNote.textContent = "예산을 저장하면 남은 금액과 사용률을 계산해드려요.";
   }
 }
@@ -365,6 +360,7 @@ function renderTransactions(transactions) {
     } else {
       transactionsEmptyState.textContent = `${formatMonthLabel(state.currentMonth)} 거래가 아직 없어요. 첫 수입이나 첫 지출부터 기록해보세요.`;
     }
+
     transactionsEmptyState.classList.remove("is-hidden");
     return;
   }
@@ -378,25 +374,22 @@ function renderTransactions(transactions) {
 
     item.innerHTML = `
       <div class="transaction-main">
-        <div>
-          <div class="transaction-title-wrap">
-            <span class="type-badge ${transaction.type === "expense" ? "is-expense" : "is-income"}">
-              ${transaction.type === "expense" ? "지출" : "수입"}
-            </span>
-            <h3 class="transaction-category">${transaction.category}</h3>
-          </div>
-          <p class="transaction-note">${transaction.note || "메모 없음"}</p>
+        <div class="transaction-title-wrap">
+          <span class="type-badge ${transaction.type === "expense" ? "is-expense" : "is-income"}">
+            ${transaction.type === "expense" ? "지출" : "수입"}
+          </span>
+          <h3 class="transaction-category">${transaction.category}</h3>
         </div>
-        <strong class="transaction-amount ${transaction.type === "expense" ? "is-expense" : "is-income"}">
-          ${sign}${formatCurrency(transaction.amount)}
-        </strong>
+        <button type="button" class="delete-button" data-id="${transaction.id}">삭제</button>
       </div>
+      <p class="transaction-note ${transaction.note ? "" : "is-empty"}">${transaction.note || "메모 없음"}</p>
+      <strong class="transaction-amount ${transaction.type === "expense" ? "is-expense" : "is-income"}">
+        ${sign}${formatCurrency(transaction.amount)}
+      </strong>
       <div class="transaction-foot">
         <div class="transaction-meta">
           <span class="meta-pill">${formatDateLabel(transaction.date)}</span>
-          <span class="meta-pill">${formatMonthLabel(transaction.date.slice(0, 7))}</span>
         </div>
-        <button type="button" class="delete-button" data-id="${transaction.id}">삭제</button>
       </div>
     `;
 
@@ -432,18 +425,6 @@ function setAnalysisTab(tabName) {
   analysisPanels.forEach((panel) => {
     panel.classList.toggle("is-active", panel.dataset.analysisPanel === tabName);
   });
-}
-
-function syncResponsiveUI(force = false) {
-  const isMobile = mobileMedia.matches;
-
-  if (isMobile) {
-    if (force) {
-      entryCollapse.removeAttribute("open");
-    }
-  } else {
-    entryCollapse.setAttribute("open", "");
-  }
 }
 
 function deleteTransaction(transactionId) {
@@ -488,9 +469,6 @@ function addTransaction(formData) {
   entryType.value = formData.type;
   renderCategoryOptions();
   entryDate.value = getDateKey(new Date());
-  if (mobileMedia.matches) {
-    entryCollapse.removeAttribute("open");
-  }
   entryAmount.focus();
 }
 
@@ -509,6 +487,7 @@ function saveBudget() {
 
 function seedExampleData() {
   const month = state.currentMonth;
+
   if (state.transactions.some((transaction) => transaction.date.startsWith(month))) {
     const shouldSeed = window.confirm("현재 월에 이미 거래가 있어요. 예시 데이터를 더 추가할까요?");
     if (!shouldSeed) {
@@ -611,9 +590,6 @@ presetButtons.forEach((button) => {
     renderCategoryOptions();
     entryCategory.value = button.dataset.category || entryCategory.value;
     entryNote.value = button.dataset.note || "";
-    if (mobileMedia.matches) {
-      entryCollapse.setAttribute("open", "");
-    }
     entryAmount.focus();
   });
 });
@@ -624,12 +600,7 @@ analysisTabButtons.forEach((button) => {
   });
 });
 
-mobileMedia.addEventListener("change", () => {
-  syncResponsiveUI(true);
-});
-
 entryDate.value = getDateKey(new Date());
 renderCategoryOptions();
 setAnalysisTab(activeAnalysisTab);
-syncResponsiveUI(true);
 render();

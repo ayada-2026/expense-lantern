@@ -13,10 +13,8 @@
       <header class="hero">
         <div class="hero-copy">
           <p class="eyebrow">Expense Lantern</p>
-          <h1 id="pageTitle">한 달 지출을 환하게 보는 개인 가계부</h1>
-          <p class="hero-text">
-            수입과 지출을 빠르게 기록하고, 이번 달 흐름과 카테고리별 소비를 한눈에 확인해보세요.
-          </p>
+          <h1 id="pageTitle">한 달 지출을 환하게</h1>
+          <p class="hero-text">수입·지출과 이번 달 흐름을 한눈에 확인하세요.</p>
         </div>
 
         <aside class="hero-panel">
@@ -76,58 +74,49 @@
             <p class="section-kicker">New Entry</p>
             <h2 id="composerTitle">거래 추가</h2>
           </div>
-          <button type="button" class="ghost-button" id="seedButton">예시 데이터 채우기</button>
+          <button type="button" class="ghost-button" id="seedButton">작은 샘플 채우기</button>
         </div>
 
-        <details class="entry-collapse" id="entryCollapse">
-          <summary class="collapse-toggle">
-            <span class="collapse-toggle-text">빠르게 기록 열기</span>
-            <span class="collapse-toggle-icon" aria-hidden="true"></span>
-          </summary>
+        <form class="entry-form" id="entryForm">
+          <label class="field field-type">
+            <span class="field-label">구분</span>
+            <select id="entryType" name="type">
+              <option value="expense">지출</option>
+              <option value="income">수입</option>
+            </select>
+          </label>
 
-          <div class="entry-collapse-body">
-            <form class="entry-form" id="entryForm">
-              <label class="field field-type">
-                <span class="field-label">구분</span>
-                <select id="entryType" name="type">
-                  <option value="expense">지출</option>
-                  <option value="income">수입</option>
-                </select>
-              </label>
+          <label class="field field-amount">
+            <span class="field-label">금액</span>
+            <input id="entryAmount" name="amount" type="number" min="0" step="100" placeholder="예: 12500" required>
+          </label>
 
-              <label class="field field-amount">
-                <span class="field-label">금액</span>
-                <input id="entryAmount" name="amount" type="number" min="0" step="100" placeholder="예: 12500" required>
-              </label>
+          <label class="field field-category">
+            <span class="field-label">카테고리</span>
+            <select id="entryCategory" name="category"></select>
+          </label>
 
-              <label class="field field-category">
-                <span class="field-label">카테고리</span>
-                <select id="entryCategory" name="category"></select>
-              </label>
+          <label class="field field-date">
+            <span class="field-label">날짜</span>
+            <input id="entryDate" name="date" type="date" required>
+          </label>
 
-              <label class="field field-date">
-                <span class="field-label">날짜</span>
-                <input id="entryDate" name="date" type="date" required>
-              </label>
+          <label class="field field-note">
+            <span class="field-label">메모</span>
+            <input id="entryNote" name="note" type="text" maxlength="80" placeholder="예: 점심 약속, OTT 결제">
+          </label>
 
-              <label class="field field-note">
-                <span class="field-label">메모</span>
-                <input id="entryNote" name="note" type="text" maxlength="80" placeholder="예: 점심 약속, OTT 결제">
-              </label>
+          <button type="submit" class="primary-button">기록 추가</button>
+        </form>
 
-              <button type="submit" class="primary-button">기록 추가</button>
-            </form>
-
-            <div class="preset-row" aria-label="빠른 카테고리 선택">
-              <button type="button" class="preset-chip" data-type="expense" data-category="식비" data-note="식사 비용">식비</button>
-              <button type="button" class="preset-chip" data-type="expense" data-category="교통" data-note="이동 비용">교통</button>
-              <button type="button" class="preset-chip" data-type="expense" data-category="쇼핑" data-note="생활/개인 쇼핑">쇼핑</button>
-              <button type="button" class="preset-chip" data-type="expense" data-category="고정비" data-note="구독, 통신, 월세">고정비</button>
-              <button type="button" class="preset-chip" data-type="income" data-category="월급" data-note="정기 수입">월급</button>
-              <button type="button" class="preset-chip" data-type="income" data-category="부수입" data-note="추가 수입">부수입</button>
-            </div>
-          </div>
-        </details>
+        <div class="preset-row" aria-label="빠른 카테고리 선택">
+          <button type="button" class="preset-chip" data-type="expense" data-category="식비" data-note="식사 비용">식비</button>
+          <button type="button" class="preset-chip" data-type="expense" data-category="교통" data-note="이동 비용">교통</button>
+          <button type="button" class="preset-chip" data-type="expense" data-category="쇼핑" data-note="생활/개인 쇼핑">쇼핑</button>
+          <button type="button" class="preset-chip" data-type="expense" data-category="고정비" data-note="구독, 통신, 월세">고정비</button>
+          <button type="button" class="preset-chip" data-type="income" data-category="월급" data-note="정기 수입">월급</button>
+          <button type="button" class="preset-chip" data-type="income" data-category="부수입" data-note="추가 수입">부수입</button>
+        </div>
       </section>
 
       <div class="analysis-tabs" role="tablist" aria-label="분석 전환">
