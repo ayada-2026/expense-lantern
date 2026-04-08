@@ -27,6 +27,7 @@ const prevMonthButton = document.getElementById("prevMonthButton");
 const nextMonthButton = document.getElementById("nextMonthButton");
 const resetMonthButton = document.getElementById("resetMonthButton");
 const seedButton = document.getElementById("seedButton");
+const entryCollapse = document.getElementById("entryCollapse");
 const entryForm = document.getElementById("entryForm");
 const entryType = document.getElementById("entryType");
 const entryAmount = document.getElementById("entryAmount");
@@ -42,8 +43,13 @@ const searchInput = document.getElementById("searchInput");
 const typeFilter = document.getElementById("typeFilter");
 const transactionList = document.getElementById("transactionList");
 const transactionsEmptyState = document.getElementById("transactionsEmptyState");
+const analysisTabButtons = Array.from(document.querySelectorAll("[data-analysis-tab]"));
+const analysisPanels = Array.from(document.querySelectorAll("[data-analysis-panel]"));
+
+const mobileMedia = window.matchMedia("(max-width: 760px)");
 
 let state = loadState();
+let activeAnalysisTab = "category";
 
 function loadState() {
   try {
@@ -414,6 +420,32 @@ function renderCategoryOptions() {
   }
 }
 
+function setAnalysisTab(tabName) {
+  activeAnalysisTab = tabName;
+
+  analysisTabButtons.forEach((button) => {
+    const isActive = button.dataset.analysisTab === tabName;
+    button.classList.toggle("is-active", isActive);
+    button.setAttribute("aria-selected", isActive ? "true" : "false");
+  });
+
+  analysisPanels.forEach((panel) => {
+    panel.classList.toggle("is-active", panel.dataset.analysisPanel === tabName);
+  });
+}
+
+function syncResponsiveUI(force = false) {
+  const isMobile = mobileMedia.matches;
+
+  if (isMobile) {
+    if (force) {
+      entryCollapse.removeAttribute("open");
+    }
+  } else {
+    entryCollapse.setAttribute("open", "");
+  }
+}
+
 function deleteTransaction(transactionId) {
   const target = state.transactions.find((transaction) => transaction.id === transactionId);
   if (!target) {
@@ -456,6 +488,9 @@ function addTransaction(formData) {
   entryType.value = formData.type;
   renderCategoryOptions();
   entryDate.value = getDateKey(new Date());
+  if (mobileMedia.matches) {
+    entryCollapse.removeAttribute("open");
+  }
   entryAmount.focus();
 }
 
@@ -576,10 +611,25 @@ presetButtons.forEach((button) => {
     renderCategoryOptions();
     entryCategory.value = button.dataset.category || entryCategory.value;
     entryNote.value = button.dataset.note || "";
+    if (mobileMedia.matches) {
+      entryCollapse.setAttribute("open", "");
+    }
     entryAmount.focus();
   });
 });
 
+analysisTabButtons.forEach((button) => {
+  button.addEventListener("click", () => {
+    setAnalysisTab(button.dataset.analysisTab || "category");
+  });
+});
+
+mobileMedia.addEventListener("change", () => {
+  syncResponsiveUI(true);
+});
+
 entryDate.value = getDateKey(new Date());
 renderCategoryOptions();
+setAnalysisTab(activeAnalysisTab);
+syncResponsiveUI(true);
 render();
