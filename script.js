@@ -1,8 +1,14 @@
 const STORAGE_KEY = "expenseLanternStateV1";
 
 const CATEGORY_PRESETS = {
-  expense: ["식비", "교통", "카페", "쇼핑", "고정비", "취미", "건강", "기타"],
-  income: ["월급", "용돈", "환급", "부수입", "판매", "기타"]
+  expense: {
+    primary: ["식비", "교통", "쇼핑", "고정비", "문화"],
+    extra: ["카페", "취미", "건강", "기타"]
+  },
+  income: {
+    primary: ["월급", "부수입", "용돈", "환급"],
+    extra: ["판매", "기타"]
+  }
 };
 
 const CURRENCY_FORMATTER = new Intl.NumberFormat("ko-KR", {
@@ -26,14 +32,13 @@ const budgetInput = document.getElementById("budgetInput");
 const prevMonthButton = document.getElementById("prevMonthButton");
 const nextMonthButton = document.getElementById("nextMonthButton");
 const resetMonthButton = document.getElementById("resetMonthButton");
-const seedButton = document.getElementById("seedButton");
 const entryForm = document.getElementById("entryForm");
 const entryType = document.getElementById("entryType");
 const entryAmount = document.getElementById("entryAmount");
-const entryCategory = document.getElementById("entryCategory");
+const entryCategoryInput = document.getElementById("entryCategory");
+const entryCategoryChipList = document.getElementById("entryCategoryChipList");
 const entryDate = document.getElementById("entryDate");
 const entryNote = document.getElementById("entryNote");
-const presetButtons = Array.from(document.querySelectorAll(".preset-chip"));
 const categoryList = document.getElementById("categoryList");
 const categoryEmptyState = document.getElementById("categoryEmptyState");
 const weeklyBars = document.getElementById("weeklyBars");
@@ -47,6 +52,7 @@ const analysisPanels = Array.from(document.querySelectorAll("[data-analysis-pane
 
 let state = loadState();
 let activeAnalysisTab = "category";
+let expandedCategoryChips = false;
 
 function loadState() {
   try {
@@ -80,10 +86,13 @@ function normalizeTransaction(transaction) {
   }
 
   const type = transaction.type === "income" ? "income" : "expense";
-  const categoryPool = CATEGORY_PRESETS[type];
+  const allCategories = [
+    ...CATEGORY_PRESETS[type].primary,
+    ...CATEGORY_PRESETS[type].extra
+  ];
   const category = typeof transaction.category === "string" && transaction.category.trim()
     ? transaction.category.trim()
-    : categoryPool[0];
+    : allCategories[0];
   const date = typeof transaction.date === "string" && /^\d{4}-\d{2}-\d{2}$/.test(transaction.date)
     ? transaction.date
     : getDateKey(new Date());
@@ -143,11 +152,16 @@ function formatMonthLabel(monthKey) {
 }
 
 function formatDateLabel(dateKey) {
-  return new Intl.DateTimeFormat("ko-KR", {
-    month: "long",
-    day: "numeric",
+  const date = parseDateKey(dateKey);
+  const dateText = new Intl.DateTimeFormat("ko-KR", {
+    month: "numeric",
+    day: "numeric"
+  }).format(date);
+  const weekday = new Intl.DateTimeFormat("ko-KR", {
     weekday: "short"
-  }).format(parseDateKey(dateKey));
+  }).format(date);
+
+  return `${dateText} (${weekday})`;
 }
 
 function getTransactionsForCurrentMonth() {
@@ -400,17 +414,62 @@ function renderTransactions(transactions) {
   });
 }
 
-function renderCategoryOptions() {
-  const categories = CATEGORY_PRESETS[entryType.value];
-  const current = entryCategory.value;
+function getEntryCategorySet(type) {
+  return CATEGORY_PRESETS[type] || CATEGORY_PRESETS.expense;
+}
 
-  entryCategory.innerHTML = categories
-    .map((category) => `<option value="${category}">${category}</option>`)
-    .join("");
+function ensureEntryCategory() {
+  const { primary, extra } = getEntryCategorySet(entryType.value);
+  const all = [...primary, ...extra];
 
-  if (categories.includes(current)) {
-    entryCategory.value = current;
+  if (!all.includes(entryCategoryInput.value)) {
+    [entryCategoryInput.value] = primary;
   }
+}
+
+function selectEntryCategory(category) {
+  entryCategoryInput.value = category;
+  renderEntryCategoryChips();
+}
+
+function renderEntryCategoryChips() {
+  const { primary, extra } = getEntryCategorySet(entryType.value);
+  const visible = expandedCategoryChips ? [...primary, ...extra] : [...primary];
+
+  ensureEntryCategory();
+  entryCategoryChipList.innerHTML = "";
+
+  visible.forEach((category) => {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = "category-select-chip";
+    if (entryCategoryInput.value === category) {
+      button.classList.add("is-active");
+    }
+    button.textContent = category;
+    button.addEventListener("click", () => {
+      selectEntryCategory(category);
+    });
+    entryCategoryChipList.appendChild(button);
+  });
+
+  if (extra.length) {
+    const moreButton = document.createElement("button");
+    moreButton.type = "button";
+    moreButton.className = "category-select-chip is-more";
+    moreButton.textContent = expandedCategoryChips ? "접기" : "+더보기";
+    moreButton.addEventListener("click", () => {
+      expandedCategoryChips = !expandedCategoryChips;
+      renderEntryCategoryChips();
+    });
+    entryCategoryChipList.appendChild(moreButton);
+  }
+}
+
+function resetEntryCategoryState() {
+  expandedCategoryChips = false;
+  ensureEntryCategory();
+  renderEntryCategoryChips();
 }
 
 function setAnalysisTab(tabName) {
@@ -450,12 +509,16 @@ function addTransaction(formData) {
     return;
   }
 
+  if (!formData.category) {
+    ensureEntryCategory();
+  }
+
   state.transactions = [
     {
       id: Date.now(),
       type: formData.type,
       amount: Math.round(amount),
-      category: formData.category,
+      category: formData.category || entryCategoryInput.value,
       date: formData.date,
       note: formData.note.trim()
     },
@@ -467,8 +530,10 @@ function addTransaction(formData) {
   render();
   entryForm.reset();
   entryType.value = formData.type;
-  renderCategoryOptions();
   entryDate.value = getDateKey(new Date());
+  entryNote.value = "";
+  entryCategoryInput.value = "";
+  resetEntryCategoryState();
   entryAmount.focus();
 }
 
@@ -479,43 +544,6 @@ function saveBudget() {
     delete state.budgets[state.currentMonth];
   } else {
     state.budgets[state.currentMonth] = Math.round(amount);
-  }
-
-  saveState();
-  render();
-}
-
-function seedExampleData() {
-  const month = state.currentMonth;
-
-  if (state.transactions.some((transaction) => transaction.date.startsWith(month))) {
-    const shouldSeed = window.confirm("현재 월에 이미 거래가 있어요. 예시 데이터를 더 추가할까요?");
-    if (!shouldSeed) {
-      return;
-    }
-  }
-
-  const examples = [
-    { type: "income", category: "월급", amount: 2800000, date: `${month}-01`, note: "월급 입금" },
-    { type: "expense", category: "고정비", amount: 650000, date: `${month}-02`, note: "월세와 통신비" },
-    { type: "expense", category: "식비", amount: 12400, date: `${month}-03`, note: "점심 약속" },
-    { type: "expense", category: "교통", amount: 2850, date: `${month}-04`, note: "버스 충전" },
-    { type: "expense", category: "카페", amount: 5900, date: `${month}-06`, note: "아이스 라테" },
-    { type: "expense", category: "쇼핑", amount: 48000, date: `${month}-11`, note: "생활용품" },
-    { type: "income", category: "부수입", amount: 90000, date: `${month}-15`, note: "중고 판매" },
-    { type: "expense", category: "취미", amount: 27000, date: `${month}-18`, note: "전시 티켓" }
-  ];
-
-  state.transactions = [
-    ...examples.map((transaction, index) => ({
-      id: Date.now() + index,
-      ...transaction
-    })),
-    ...state.transactions
-  ];
-
-  if (!state.budgets[month]) {
-    state.budgets[month] = 1200000;
   }
 
   saveState();
@@ -534,7 +562,7 @@ function render() {
 }
 
 entryType.addEventListener("change", () => {
-  renderCategoryOptions();
+  resetEntryCategoryState();
 });
 
 entryForm.addEventListener("submit", (event) => {
@@ -543,7 +571,7 @@ entryForm.addEventListener("submit", (event) => {
   addTransaction({
     type: entryType.value,
     amount: entryAmount.value,
-    category: entryCategory.value,
+    category: entryCategoryInput.value,
     date: entryDate.value,
     note: entryNote.value
   });
@@ -572,26 +600,12 @@ resetMonthButton.addEventListener("click", () => {
   render();
 });
 
-seedButton.addEventListener("click", () => {
-  seedExampleData();
-});
-
 searchInput.addEventListener("input", () => {
   renderTransactions(getTransactionsForCurrentMonth());
 });
 
 typeFilter.addEventListener("change", () => {
   renderTransactions(getTransactionsForCurrentMonth());
-});
-
-presetButtons.forEach((button) => {
-  button.addEventListener("click", () => {
-    entryType.value = button.dataset.type || "expense";
-    renderCategoryOptions();
-    entryCategory.value = button.dataset.category || entryCategory.value;
-    entryNote.value = button.dataset.note || "";
-    entryAmount.focus();
-  });
 });
 
 analysisTabButtons.forEach((button) => {
@@ -601,6 +615,6 @@ analysisTabButtons.forEach((button) => {
 });
 
 entryDate.value = getDateKey(new Date());
-renderCategoryOptions();
+resetEntryCategoryState();
 setAnalysisTab(activeAnalysisTab);
 render();

@@ -378,9 +378,63 @@ select {
   align-items: end;
 }
 
+.field-category-chips,
+.field-date {
+  min-width: 0;
+}
+
+.entry-category-chip-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.category-select-chip {
+  border: 1px solid rgba(115, 86, 56, 0.12);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.84);
+  color: var(--muted);
+  padding: 9px 13px;
+  font-size: 0.9rem;
+  line-height: 1;
+  cursor: pointer;
+  transition: transform 0.16s ease, background-color 0.16s ease, color 0.16s ease, border-color 0.16s ease;
+}
+
+.category-select-chip.is-active {
+  background: linear-gradient(135deg, #2c8b72 0%, #1d6b57 100%);
+  border-color: transparent;
+  color: #f6fffb;
+  box-shadow: 0 12px 22px rgba(29, 107, 87, 0.18);
+}
+
+.category-select-chip.is-more {
+  color: var(--ink);
+}
+
 .field-date input {
   min-width: 0;
   max-width: 100%;
+  width: 100%;
+  overflow: hidden;
+  appearance: none;
+  -webkit-appearance: none;
+  background-clip: padding-box;
+  padding-right: 14px;
+  font-variant-numeric: tabular-nums;
+}
+
+.field-date input::-webkit-date-and-time-value {
+  text-align: left;
+}
+
+.field-date input::-webkit-clear-button,
+.field-date input::-webkit-inner-spin-button {
+  display: none;
+}
+
+.field-date input::-webkit-calendar-picker-indicator {
+  margin: 0;
 }
 
 .preset-row {
@@ -573,9 +627,9 @@ select {
 
 .type-badge {
   flex: none;
-  padding: 8px 10px;
+  padding: 9px 12px;
   border-radius: 999px;
-  font-size: 0.82rem;
+  font-size: 0.88rem;
   font-weight: 700;
 }
 
@@ -641,7 +695,10 @@ select {
   color: var(--expense);
   background: rgba(255, 226, 214, 0.9);
   border-radius: 14px;
-  min-width: 72px;
+  min-width: 0;
+  padding: 8px 11px;
+  font-size: 0.76rem;
+  font-weight: 700;
 }
 
 #budgetValue.is-placeholder {
@@ -833,6 +890,15 @@ select {
     width: 100%;
   }
 
+  .entry-category-chip-list {
+    gap: 7px;
+  }
+
+  .category-select-chip {
+    padding: 9px 12px;
+    font-size: 0.88rem;
+  }
+
   .preset-row {
     gap: 8px;
     flex-wrap: wrap;
@@ -904,6 +970,11 @@ select {
     flex-direction: row;
     align-items: center;
   }
+
+  .delete-button {
+    padding: 7px 10px;
+    font-size: 0.74rem;
+  }
 }
 
 @media (max-width: 520px) {
@@ -937,5 +1008,14 @@ select {
   .transaction-main,
   .transaction-foot {
     flex-wrap: wrap;
+  }
+
+  .entry-category-chip-list {
+    gap: 6px;
+  }
+
+  .category-select-chip {
+    font-size: 0.84rem;
+    padding: 8px 11px;
   }
 }

@@ -74,7 +74,6 @@
             <p class="section-kicker">New Entry</p>
             <h2 id="composerTitle">거래 추가</h2>
           </div>
-          <button type="button" class="ghost-button" id="seedButton">작은 샘플 채우기</button>
         </div>
 
         <form class="entry-form" id="entryForm">
@@ -91,10 +90,11 @@
             <input id="entryAmount" name="amount" type="number" min="0" step="100" placeholder="예: 12500" required>
           </label>
 
-          <label class="field field-category">
+          <div class="field field-category-chips">
             <span class="field-label">카테고리</span>
-            <select id="entryCategory" name="category"></select>
-          </label>
+            <input id="entryCategory" name="category" type="hidden">
+            <div class="entry-category-chip-list" id="entryCategoryChipList" aria-label="카테고리 선택"></div>
+          </div>
 
           <label class="field field-date">
             <span class="field-label">날짜</span>
@@ -108,15 +108,6 @@
 
           <button type="submit" class="primary-button">기록 추가</button>
         </form>
-
-        <div class="preset-row" aria-label="빠른 카테고리 선택">
-          <button type="button" class="preset-chip" data-type="expense" data-category="식비" data-note="식사 비용">식비</button>
-          <button type="button" class="preset-chip" data-type="expense" data-category="교통" data-note="이동 비용">교통</button>
-          <button type="button" class="preset-chip" data-type="expense" data-category="쇼핑" data-note="생활/개인 쇼핑">쇼핑</button>
-          <button type="button" class="preset-chip" data-type="expense" data-category="고정비" data-note="구독, 통신, 월세">고정비</button>
-          <button type="button" class="preset-chip" data-type="income" data-category="월급" data-note="정기 수입">월급</button>
-          <button type="button" class="preset-chip" data-type="income" data-category="부수입" data-note="추가 수입">부수입</button>
-        </div>
       </section>
 
       <div class="analysis-tabs" role="tablist" aria-label="분석 전환">
