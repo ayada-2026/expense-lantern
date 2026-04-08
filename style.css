@@ -409,7 +409,10 @@ select {
 }
 
 .category-select-chip.is-more {
-  color: var(--ink);
+  color: rgba(113, 96, 76, 0.58);
+  background: rgba(255, 255, 255, 0.55);
+  border-color: rgba(115, 86, 56, 0.08);
+  font-weight: 500;
 }
 
 .field-date input {
@@ -699,6 +702,10 @@ select {
   padding: 8px 11px;
   font-size: 0.76rem;
   font-weight: 700;
+}
+
+.ghost-button.is-hidden {
+  display: none;
 }
 
 #budgetValue.is-placeholder {

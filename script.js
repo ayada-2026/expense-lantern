@@ -194,38 +194,24 @@ function getMonthlySummary(transactions) {
   };
 }
 
-function getInsight(summary) {
-  if (!summary.income && !summary.expense) {
+function getInsight(summary, transactionCount) {
+  if (transactionCount === 0) {
     return {
-      title: "첫 기록을 남겨보세요",
-      body: "작은 소비 하나부터 시작해도 충분해요. 기록이 쌓일수록 소비 패턴이 더 선명하게 보입니다."
+      title: "예산부터 가볍게 시작해보세요",
+      body: "이번 달 기준을 정해두면 흐름이 더 잘 보여요"
     };
   }
 
-  if (summary.budget > 0 && summary.remainingBudget < 0) {
+  if (transactionCount <= 3) {
     return {
-      title: "예산을 넘기고 있어요",
-      body: `${formatCurrency(Math.abs(summary.remainingBudget))} 만큼 초과 중이에요. 고정비나 쇼핑 지출을 먼저 점검해보면 좋아요.`
-    };
-  }
-
-  if (summary.balance >= 0 && summary.expense > 0) {
-    return {
-      title: "이번 달은 균형이 좋아요",
-      body: `현재 ${formatCurrency(summary.balance)} 남아 있어요. 남은 기간엔 반복 지출만 가볍게 관리하면 안정적으로 마무리할 수 있어요.`
-    };
-  }
-
-  if (summary.expense > summary.income && summary.income > 0) {
-    return {
-      title: "지출 속도가 더 빨라요",
-      body: `수입보다 ${formatCurrency(summary.expense - summary.income)} 더 쓰고 있어요. 남은 소비를 조금 더 작은 단위로 나눠보면 좋아요.`
+      title: "기록이 쌓이고 있어요",
+      body: "이번 달 지출과 예산 잔여를 함께 확인해보세요"
     };
   }
 
   return {
-    title: "흐름이 잡히고 있어요",
-    body: "수입과 지출이 함께 기록되고 있어요. 카테고리와 주간 흐름을 같이 보면 더 좋은 판단이 됩니다."
+    title: "이번달 흐름이 잡히고 있어요",
+    body: "지출과 예산 잔여를 한 눈에 확인해 보세요"
   };
 }
 
@@ -234,9 +220,12 @@ function renderMonthHeader(transactions, summary) {
   monthCaption.textContent = transactions.length ? `${transactions.length}건 기록됨` : "아직 기록 없음";
   budgetInput.value = summary.budget > 0 ? String(summary.budget) : "";
 
-  const insight = getInsight(summary);
+  const insight = getInsight(summary, transactions.length);
   insightTitle.textContent = insight.title;
   insightText.textContent = insight.body;
+
+  const isCurrentMonth = state.currentMonth === getMonthKey(new Date());
+  resetMonthButton.classList.toggle("is-hidden", isCurrentMonth);
 }
 
 function renderSummary(summary) {
